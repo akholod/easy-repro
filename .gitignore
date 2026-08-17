@@ -1,0 +1,25 @@
+node_modules/
+.DS_Store
+*.log
+
+# Scratch capture output. An uploaded attachment cannot be deleted, and frames of
+# a real screen are the same data as the video they came from — do not let one
+# get committed by accident.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.mp4
+*.mov
+*.webm
+*.cast
+frames/
+sheet.png
+
+# A digest -> asset-URL ledger. An attachment URL is a capability: anyone who can
+# read it can fetch the bytes. Never commit one to a public repository.
+.easy-cast/
+
+# Agent runtime state, not part of the skill.
+.omc/
