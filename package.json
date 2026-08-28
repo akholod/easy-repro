@@ -1,0 +1,19 @@
+{
+  "name": "easy-repro",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Skills for visual evidence: produce it (repro), deliver it without a CLI (github-media-attach)",
+  "type": "module",
+  "license": "MIT",
+  "author": "Andrii Kokhanevich <andrey.kokhanevich@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akholod/easy-repro.git"
+  },
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
