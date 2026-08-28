@@ -1,0 +1,26 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "easy-repro",
+  "description": "Reproduce a bug or demonstrate a feature by driving the app in a browser, capture the evidence, and render it to a local folder. Delivery to GitHub comes from the easy-cast CLI when it is installed.",
+  "owner": {
+    "name": "Andrii Kokhanevich",
+    "email": "andrey.kokhanevich@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "easy-repro",
+      "description": "Drive the app, see the bug or the feature happen, capture it, and render the evidence to a folder you can delete.",
+      "version": "0.1.0",
+      "source": "./",
+      "category": "productivity",
+      "tags": [
+        "repro",
+        "screenshot",
+        "video",
+        "visual-evidence",
+        "github"
+      ]
+    }
+  ],
+  "version": "0.1.0"
+}
