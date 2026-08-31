@@ -12,9 +12,8 @@ capture it, look at it, and write a folder somebody can read.
 **Never claim a bug is reproduced until you have seen it in a running browser.** Everything below
 serves that.
 
-Capture is `playwright-cli`'s job, delivery is `easy-cast`'s; this skill decides *what* to capture and
-*whether it is true*. Neighbours are named, never pathed — the path differs per machine, the name does
-not.
+Capture is `playwright-cli`'s job and delivery is `easy-cast`'s; this skill decides *what* to capture
+and *whether it is true*. Neighbours are named, never pathed.
 
 ## Scope, stated plainly
 
@@ -23,7 +22,7 @@ not.
 | Subjects | a **bug** to reproduce, or a **feature** to demonstrate |
 | Precondition | the app already runs — this skill starts your dev server, it does not scaffold one |
 | Sink | a local folder. **Nothing is posted.** |
-| Not yet | before/after for a fix, posting to an issue or PR, non-browser subjects, building a minimal reproduction page |
+| Not yet | a fix before/after, posting, non-browser subjects, scaffolding a minimal page |
 
 If the subject is a fix, a stack trace, a CLI, or anything you would rather paste as text — say so and
 stop. A gif of a log is worse than a code fence.
@@ -35,15 +34,16 @@ stop. A gif of a log is worse than a code fence.
 Fail fast, before anything is started:
 
 ```bash
-playwright-cli --version || npx --no-install playwright-cli --version   # required
-easy-cast --version                                                     # optional — see below
-ffmpeg -version                                                         # only if the subject needs video
+playwright-cli --version || npx --no-install playwright-cli --version  # required
+easy-cast --help | grep -qw render                                     # required — see below
+ffmpeg -version                                        # only if the subject needs video
 ```
 
-**`easy-cast` renders the folder and has no substitute here.** If the binary does not answer, **stop
-and say so** — ask for `npm i -g easy-cast`, or hand over the run directory as it stands. Do **not**
-reach for `github-media-attach`: its job is uploading, and this run posts nothing. Probe the
-**binary**, not whether a skill is installed.
+**`easy-cast render` writes the folder, and has no substitute here.** Probe the **verb**, not the
+binary and not whether a skill is installed: an older `easy-cast` answers `--version` happily and
+then fails at the last step, after the app has been driven and the files reviewed. If it is missing,
+**stop now** — ask for `npm i -g easy-cast@latest`, or hand over the run directory as it stands. Do
+**not** reach for `github-media-attach`: its job is uploading, and this run posts nothing.
 
 **The test account is settled here, not later.** §2 of the `easy-cast` skill is the primary defence: a
 fictional account, fixture data, a fresh in-memory session, a clean URL. A demo against production
@@ -51,29 +51,16 @@ data is a **hard stop** — re-record it. You do not yet know this folder will n
 
 ### The profile
 
-Six fields, read from `$(git rev-parse --git-common-dir)/info/repro-profile.json` — untracked, local,
-nobody's permission needed, and correct inside a linked worktree where `.git` is a file:
+Six fields at `$(git rev-parse --git-common-dir)/info/repro-profile.json` — untracked and local:
+`baseUrl`, `start.command`, `start.cwd`, `ready.url`, `ready.failure[]`, `stop.command`.
 
-```json
-{
-  "version": 1,
-  "baseUrl": "http://localhost:5173",
-  "start":   { "command": "pnpm dev", "cwd": "." },
-  "ready":   { "url": "http://localhost:5173/", "failure": ["EADDRINUSE", "Failed to compile"] },
-  "stop":    { "command": "" }
-}
-```
+**Missing?** Ask **one** `AskUserQuestion` — how is this app started — ranking candidates from
+`package.json`, `pom.xml`, a `Makefile`, `docker-compose.yml`, and **executing nothing** while asking.
+Write the answer; never ask again. **Arrived with a clone?** Confirm it once per machine before
+running it: it is somebody else's shell commands.
 
-**Missing?** Ask **one** `AskUserQuestion`: how is this app started. Rank candidates from
-`package.json` scripts, `pom.xml` plugins, a `Makefile`, `docker-compose.yml` — and **execute nothing**
-while asking, because starting a candidate to find out can rebuild `node_modules`, bind a port or
-touch a database. Write the answer; never ask again.
-
-**Arrived with a clone?** It is a file of shell commands somebody else wrote: confirm it once per
-machine — show `start.command`, get a yes, record the profile's hash beside it. Confirming at
-authoring time covered the author, not you.
-
-`ready.failure[]` earns its place: without it a wait loop hangs forever on a broken build.
+Field-by-field, and why `ready.failure[]` is the one that earns its place:
+[references/profile.md](references/profile.md).
 
 ---
 
@@ -221,9 +208,9 @@ folder is deletable.
 
 ## P12 — Put it back
 
-Stop the server with `stop.command`; where one exists, **use it** rather than killing the background
-task, which can leave a forked process holding the port. An empty `stop.command` means killing the
-task is the defined behaviour.
+Stop the server with `stop.command` where one exists — **use it** rather than killing the background
+task, which can leave a forked process holding the port. Empty means killing the task is the defined
+behaviour.
 
-Then confirm `git status --porcelain` shows nothing you added — run artifacts live outside the repo
-for exactly this reason. Keep the run directory: it is the evidence, and it is deletable.
+Then confirm `git status --porcelain` shows nothing you added; run artifacts live outside the repo for
+exactly this reason. Keep the run directory: it is the evidence, and it is deletable.
