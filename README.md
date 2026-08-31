@@ -51,6 +51,7 @@ disk and somebody has decided it should go on an issue.
 | | |
 | --- | --- |
 | `skills/repro/SKILL.md` | drive the app, reproduce the bug or demo the feature, look at the result, render it to a folder |
+| `skills/repro/references/profile.md` | the six-field profile: how this repo starts, and why `ready.failure[]` is the field that earns its place |
 | `skills/github-media-attach/SKILL.md` | the delivery pipeline: decide → capture → annotate → convert → review → upload → place |
 | `skills/github-media-attach/references/capture.md` | screenshots and video on Wayland, X11, macOS, headless, and from a browser |
 | `skills/github-media-attach/references/convert.md` | to h264 mp4; trimming, size targeting, contact sheets |
