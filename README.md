@@ -3,20 +3,38 @@
 Skills for visual evidence in software work: produce it by driving the app (**`repro`**), or
 deliver what you already have to GitHub without a CLI (**`github-media-attach`**).
 
+**As a Claude Code plugin** — both skills, plus the `/repro` command:
+
 ```bash
-# Claude Code
 /plugin marketplace add akholod/easy-repro
 /plugin install easy-repro@easy-repro
+```
 
-# any other harness
-npx skills add akholod/easy-repro            # this project
+**As skills, on any harness** — this is the channel that can install one of them:
+
+```bash
+npx skills add akholod/easy-repro            # both skills, this project
+npx skills add akholod/easy-repro -s repro   # repro only
 npx skills add akholod/easy-repro -a '*'     # every installed agent
-npx skills add akholod/easy-repro -s repro   # one skill only
+npx skills add akholod/easy-repro -s repro -l  # list first, install nothing
 ```
 
 `skills` installs to whichever agents it finds — Claude Code, Codex, OpenCode, Cursor and others.
 Or copy a directory under `skills/` into your agent's skills folder by hand; each skill is plain
 markdown (plus, for `github-media-attach`, two shell scripts).
+
+### Installing only `repro`
+
+A plugin ships as a unit: `/plugin install` gives you both skills and the command, with no way to
+pick one. If you want `repro` alone, use the `skills` channel above — it works on Claude Code too.
+
+Two things not to confuse:
+
+- `skills add -s <name>` selects a **skill**. `claude plugin install -s <scope>` selects a **scope**
+  (`user`, `project`, `local`). Same letter, different meaning, and `-s repro` on the plugin command
+  is an invalid scope rather than a skill filter.
+- Installing `repro` alone is not a way to avoid an uploader. `repro` never posts anything either
+  way — see below.
 
 ## Why
 
