@@ -180,8 +180,8 @@ function lint() {
 /**
  * The seam check.
  *
- * `repro` decides what to capture and `easy-cast` publishes it, and the
- * obligation that somebody *looked* at each frame lives in the gap between them.
+ * `repro` decides what to capture and renders the folder itself, and the
+ * obligation that somebody *looked* at each frame lives between capture and report.
  * No CLI can check it. What can be checked is that the run wrote down what it
  * saw — so every artifact the spec names must appear under `reviewed:` in
  * notes.md, and a "not reproduced" verdict must have an iteration log behind it.

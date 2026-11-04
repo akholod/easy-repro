@@ -1,6 +1,6 @@
 ---
 name: repro
-description: Reproduce a bug or demonstrate a feature by driving the app in a browser, then render the evidence (screenshot or video plus notes) to a local folder. Invoked explicitly; posts nothing — delivery to an issue or PR is a separate ask.
+description: Reproduce a bug or demonstrate a feature by driving the app in a browser, then render the evidence (screenshot or video plus notes) to a local folder. For when nothing has been captured yet and the app has to be driven to see the thing. Invoked explicitly; posts nothing — delivery to an issue or PR is a separate ask.
 argument-hint: "[the bug to reproduce, or the feature to demonstrate]"
 disable-model-invocation: true
 ---
@@ -14,8 +14,8 @@ capture it, look at it, and write a folder somebody can read.
 **Never claim a bug is reproduced until you have seen it in a running browser.** Everything below
 serves that.
 
-Capture is `playwright-cli`'s job and delivery is `easy-cast`'s; this skill decides *what* to capture
-and *whether it is true*. Neighbours are named, never pathed.
+The skill needs a browser it can drive and nothing else. It decides *what* to capture and *whether
+it is true*; a browser driver captures; you write the report. Neighbours are named, never pathed.
 
 ## Scope, stated plainly
 
@@ -24,7 +24,7 @@ and *whether it is true*. Neighbours are named, never pathed.
 | Subjects | a **bug** to reproduce, or a **feature** to demonstrate |
 | Precondition | the app already runs — this skill starts your dev server, it does not scaffold one |
 | Sink | a local folder. **Nothing is posted.** |
-| Not yet | a fix before/after, posting, non-browser subjects, scaffolding a minimal page |
+| Not here | a fix before/after (see `prove-then-fix`), posting, non-browser subjects, scaffolding a minimal page |
 
 If the subject is a fix, a stack trace, a CLI, or anything you would rather paste as text — say so and
 stop. A gif of a log is worse than a code fence.
@@ -33,30 +33,31 @@ stop. A gif of a log is worse than a code fence.
 
 ## P0 — Preflight
 
-Fail fast, before anything is started:
+Fail fast, before anything is started. Pick the first browser driver that answers, in this order;
+probe in a way that cannot install anything:
 
 ```bash
-playwright-cli --version || npx --no-install playwright-cli --version  # required
-easy-cast --help | grep -qw render                                     # required — see below
-ffmpeg -version                                        # only if the subject needs video
+command -v playwright-cli                      # preferred: in-memory sessions, run-code, screencast
+grep -q '"@playwright/test"\|"playwright"' package.json   # plain Playwright script via the project's install
+command -v agent-browser                       # any other driver the machine has
+ffmpeg -version                                # only if the subject needs video and you must review frames
 ```
 
-**`easy-cast render` writes the folder, and has no substitute here.** Probe the **verb**, not the
-binary and not whether a skill is installed: an older `easy-cast` answers `--version` happily and
-then fails at the last step, after the app has been driven and the files reviewed. If it is missing,
-**stop now** — ask for `npm i -g easy-cast@latest`, or hand over the run directory as it stands. Do
-**not** reach for `github-media-attach`: its job is uploading, and this run posts nothing.
+A harness browser tool (a Playwright or DevTools MCP) also counts. No driver at all → stop and say
+so; nothing below can be faked. Do **not** reach for `github-media-attach`: its job is uploading,
+and this run posts nothing.
 
-**The test account is settled here, not later.** §2 of the `easy-cast` skill is the primary defence: a
-fictional account, fixture data, a fresh in-memory session, a clean URL. A demo against production
-data is a **hard stop** — re-record it. You do not yet know this folder will never be posted.
+**The test account is settled here, not later.** A fictional account, fixture data, a fresh
+in-memory session, a clean URL — §2 of [references/capture.md](references/capture.md). A demo
+against production data is a **hard stop** — re-record it. You do not yet know this folder will
+never be posted.
 
 ### The profile
 
 Six fields at `$(git rev-parse --git-common-dir)/info/repro-profile.json` — untracked and local:
 `baseUrl`, `start.command`, `start.cwd`, `ready.url`, `ready.failure[]`, `stop.command`.
 
-**Missing?** Ask **one** `AskUserQuestion` — how is this app started — ranking candidates from
+**Missing?** Ask **one** structured question — how is this app started — ranking candidates from
 `package.json`, `pom.xml`, a `Makefile`, `docker-compose.yml`, and **executing nothing** while asking.
 Write the answer; never ask again. **Arrived with a clone?** Confirm it once per machine before
 running it: it is somebody else's shell commands.
@@ -76,7 +77,7 @@ One line, written down before anything runs:
 For a feature: **what a viewer must see, and at which route** — a demo with no named route has nowhere
 to point the browser.
 
-Then decide the medium, applying §1 of the `easy-cast` skill:
+Then decide the medium (§1 of [references/capture.md](references/capture.md)):
 
 | What it is | Capture |
 | --- | --- |
@@ -98,12 +99,13 @@ Start `start.command` in the background and **poll for real readiness** — neve
 A listening port is not readiness. A page that renders a blank spinner because the frontend never
 compiled looks exactly like a real bug, and reporting it as one is the expensive mistake.
 
-Then drive the browser with `playwright-cli` and look for `Z`.
+Then drive the browser and look for `Z`.
 
 **Inspect the real DOM before asserting.** A snapshot says what *exists*, not what a person would see
 — `opacity: 0`, white-on-white and a z-index of −1 all read as "present". Dump the structure once,
 build the check from what you saw, and prefer the element's own state or `offsetWidth > 0` over a bare
-`hidden` attribute.
+`hidden` attribute. Prefer locators over coordinates: they auto-wait, auto-scroll and pierce open
+shadow DOM.
 
 Ignore dev-server noise: a favicon 404 and a dev-mode warning belong to no bug. If nothing else
 appears, say the console is clean.
@@ -130,13 +132,13 @@ thing or it is not finished.
 ## P6 — Capture
 
 Record on the sanitised session from P0. A recording made for a person is paced for a human eye, which
-is a different job from a test — take the timings from the `easy-cast` skill's recording reference
-rather than guessing them.
+is a different job from a test — the rhythm, viewport and skeleton are §3 of
+[references/capture.md](references/capture.md); do not guess the timings.
 
-Two things are yours here. Record the scenario as **one script** through `run-code`: a process per
-step puts dead air of unpredictable length between every action. And do not trust a mask on video — it
-holds on a still, but what is covered in frame 1 is exposed in frame 5 after a scroll, and there is no
-post-hoc blur in this toolchain. If the finished file has something in it, re-record.
+Two things are yours here. Record the scenario as **one script**: a process per step puts dead air of
+unpredictable length between every action. And do not trust a mask on video — it holds on a still,
+but what is covered in frame 1 is exposed in frame 5 after a scroll, and there is no post-hoc blur in
+this toolchain. If the finished file has something in it, re-record.
 
 ---
 
@@ -144,8 +146,8 @@ post-hoc blur in this toolchain. If the finished file has something in it, re-re
 
 **Open every finished file and look at it.** Read a PNG directly; for video, extract frames and read
 them. First and last frame is not a review — exposure happens in the middle, when the page scrolled or
-a menu opened. What to look for is §4 of the `easy-cast` skill: anything you would not paste as plain
-text.
+a menu opened. The procedure and what to look for are §4 of
+[references/capture.md](references/capture.md): anything you would not paste as plain text.
 
 Then write `<run-dir>/notes.md`. This file is the gate — it is checkable, and nothing else here is:
 
@@ -157,7 +159,7 @@ iterations:
   - narrowed to a cold load — reproduces only there
 reviewed:
   - media/after.png — the menu overlaps the header, cropping "Save"
-  - media/flow.mp4 — frames at 0s / 4s / 8s — the spinner never resolves
+  - media/flow.webm — frames at 0s / 4s / 8s — the spinner never resolves
 ```
 
 All four sections are required, and each `reviewed:` bullet **starts with the path exactly as the spec
@@ -171,8 +173,8 @@ the correspondence mechanically — run it before handing anything over.
 
 ## P8 — Author the spec
 
-`spec.json` is a `ReportSpec` — the format `easy-cast` reads. Hand over a **spec, not a list of file
-paths**: the label is the mechanical proof somebody opened the file, and a bare path skips it.
+`spec.json` says what each artifact shows. Hand over a **spec, not a list of file paths**: the label is
+the mechanical proof somebody opened the file, and a bare path skips it.
 
 ```json
 { "version": 1, "title": "reproduced: menu overlaps the header on a cold load",
@@ -183,21 +185,17 @@ paths**: the label is the mechanical proof somebody opened the file, and a bare 
 
 A label says **what the frame shows and why it matters** — not the file name. `Z` from P1 is usually
 already the right sentence. Prose that is not an image belongs in a section's `text`, never in a
-screenshot of text.
-
-If `compose` refuses the spec's `version`, the CLI is newer than this skill: re-read the skill. Never
-edit the version number to make a refusal go away.
+screenshot of text. Field rules: [references/report.md](references/report.md).
 
 ---
 
 ## P10 — Render the folder
 
-```bash
-easy-cast render --spec <run-dir>/spec.json --out-dir <run-dir>/out
-```
-
-You get `report.md`, the artifacts copied beside it under `assets/`, plus `spec.json` and
-`manifest.json`. Read `report.md` before handing it over — the last free moment, and free because the
+Write `<run-dir>/out/report.md` from the spec, by hand, in the fixed shape given in
+[references/report.md](references/report.md): one heading per section, its text, each artifact
+embedded from `out/assets/` with its label as the caption, a footer repeating `account:` and
+`data:`. Copy the artifacts into `out/assets/` so the folder survives being zipped and opened
+elsewhere. Read `report.md` before handing it over — the last free moment, and free because the
 folder is deletable.
 
 **Nothing was uploaded and nothing can be.** Say so; do not imply a link exists.
