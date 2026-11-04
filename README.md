@@ -3,7 +3,7 @@
 Skills for visual evidence in software work: produce it by driving the app (**`repro`**), or
 deliver what you already have to GitHub without a CLI (**`github-media-attach`**).
 
-**As a Claude Code plugin** — both skills, plus the `/repro` command:
+**As a Claude Code plugin** — both skills, `repro` invoked explicitly as `/easy-repro:repro`:
 
 ```bash
 /plugin marketplace add akholod/easy-repro
@@ -79,7 +79,6 @@ disk and somebody has decided it should go on an issue.
 | `skills/github-media-attach/references/safety.md` | what must never reach a frame, and what to do when something did |
 | `skills/github-media-attach/scripts/upload-asset.sh` | one file → one asset URL, with the id lookup, the type table and the response classification |
 | `skills/github-media-attach/scripts/upsert-comment.sh` | post a comment, or update the one this workflow posted last time |
-| `commands/repro.md` | the `/repro` entry point for Claude Code |
 | `.claude-plugin/plugin.json`, `marketplace.json` | the plugin manifests; the repo is its own marketplace |
 | `check.mjs` | the checks below, in both modes |
 | `evals/triggers.jsonl` | the trigger eval set: 15 prompts, pass bar 100% on the unambiguous rows |

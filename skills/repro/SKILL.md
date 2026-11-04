@@ -1,6 +1,8 @@
 ---
 name: repro
-description: Reproduce a bug or demonstrate a feature by driving the app in a browser, then render the evidence to a local folder. Use when nothing has been captured yet and the app has to be driven to see the thing — a subject you can see in a browser. Posts nothing; delivery to an issue or PR is a separate ask.
+description: Reproduce a bug or demonstrate a feature by driving the app in a browser, then render the evidence (screenshot or video plus notes) to a local folder. Invoked explicitly; posts nothing — delivery to an issue or PR is a separate ask.
+argument-hint: "[the bug to reproduce, or the feature to demonstrate]"
+disable-model-invocation: true
 ---
 
 # Reproduce it, then show it
