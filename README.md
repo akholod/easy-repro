@@ -167,7 +167,7 @@ what was not measured is listed as such rather than guessed.
 | `skills/github-media-attach/scripts/` | `upload-asset.sh` (one file → one asset URL), `upsert-comment.sh` (post or update the workflow's comment) |
 | `.claude-plugin/` | plugin and marketplace manifests; the repo is its own marketplace |
 | `check.mjs` | `node check.mjs` lints the repo (size budgets, the precondition phrase in each description, manifest agreement); `node check.mjs run <run-dir>` checks a run reviewed what it hands over |
-| `evals/triggers.jsonl` | 15 trigger prompts; pass bar 100% on the unambiguous rows |
+| `evals/triggers.jsonl` | 15 prompts and which skill, if any, may claim each one now that `repro` is explicit-only; a manual eval set, pass bar 100% on the unambiguous rows |
 
 ## Licence
 

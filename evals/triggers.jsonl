@@ -1,15 +1,15 @@
-{"prompt": "reproduce the bug where the menu covers the Save button", "expected_skill": "repro", "ambiguous": false, "why": "nothing captured yet; the app has to be driven"}
-{"prompt": "show me the new members filter working", "expected_skill": "repro", "ambiguous": false, "why": "feature demo, nothing captured yet"}
-{"prompt": "the checkout flow hangs on the second step — capture it", "expected_skill": "repro", "ambiguous": false, "why": "a bug that only exists while the app runs"}
-{"prompt": "drive the app and prove the dropdown closes too early", "expected_skill": "repro", "ambiguous": false, "why": "explicitly asks for the app to be driven"}
-{"prompt": "screenshot the settings page so I can check the spacing", "expected_skill": "repro", "ambiguous": false, "why": "no file exists; the page must be opened first"}
-{"prompt": "attach screenshot.png to PR 42", "expected_skill": "easy-cast", "ambiguous": false, "why": "the file already exists on disk"}
-{"prompt": "put demo.mp4 on issue 118", "expected_skill": "easy-cast", "ambiguous": false, "why": "the file already exists on disk"}
-{"prompt": "upload this png and give me the URL", "expected_skill": "easy-cast", "ambiguous": false, "why": "the file already exists on disk"}
-{"prompt": "render report.json into ./evidence so I can look at it", "expected_skill": "easy-cast", "ambiguous": false, "why": "a spec already exists; this is the render verb"}
+{"prompt": "reproduce the bug where the menu covers the Save button", "expected_skill": null, "ambiguous": false, "why": "repro is explicit-only (disable-model-invocation) and must be invoked by command; nothing exists on disk, so github-media-attach must not claim it either"}
+{"prompt": "show me the new members filter working", "expected_skill": null, "ambiguous": false, "why": "a feature demo with nothing captured yet: repro's job, but only when invoked by command"}
+{"prompt": "the checkout flow hangs on the second step — capture it", "expected_skill": null, "ambiguous": false, "why": "nothing captured yet; the capture verb alone must not route to github-media-attach, and repro does not auto-trigger"}
+{"prompt": "drive the app and prove the dropdown closes too early", "expected_skill": null, "ambiguous": false, "why": "explicitly asks for the app to be driven; still repro's job, still explicit-only"}
+{"prompt": "screenshot the settings page so I can check the spacing", "expected_skill": null, "ambiguous": false, "why": "no file exists; the page must be opened first — not a delivery task, and repro does not auto-trigger"}
+{"prompt": "attach screenshot.png to PR 42", "expected_skill": "github-media-attach", "ambiguous": true, "why": "the file already exists on disk; without a dedicated attachment CLI this is the manual path. With easy-cast installed, its own skill claims it instead"}
+{"prompt": "put demo.mp4 on issue 118", "expected_skill": "github-media-attach", "ambiguous": true, "why": "the file already exists on disk; same environment caveat as above"}
+{"prompt": "upload this png and give me the URL", "expected_skill": "github-media-attach", "ambiguous": true, "why": "the file already exists on disk; same environment caveat as above"}
+{"prompt": "render spec.json into ./evidence so I can look at it", "expected_skill": null, "ambiguous": false, "why": "rendering a spec into a report folder is plain markdown the agent writes (repro P10); no skill claims it on its own"}
 {"prompt": "I need to put a screenshot on a PR and easy-cast is not installed", "expected_skill": "github-media-attach", "ambiguous": false, "why": "states the no-CLI precondition outright"}
 {"prompt": "refactor the auth module to use the new token store", "expected_skill": null, "ambiguous": false, "why": "nothing to look at; no visual evidence involved"}
 {"prompt": "bump the lockfile and rerun the tests", "expected_skill": null, "ambiguous": false, "why": "nothing to look at"}
-{"prompt": "prove this fix works with a before and after", "expected_skill": null, "ambiguous": true, "why": "the fix subject is increment 3 — increment 1's description must NOT claim it, so a repro trigger here would be advertising a dead end"}
-{"prompt": "post the repro to issue 4211", "expected_skill": null, "ambiguous": true, "why": "increment 1 posts nothing; delivery to an issue is a separate ask, so this must not route to repro on the posting verb alone"}
-{"prompt": "our CLI crashes on --json, capture it", "expected_skill": null, "ambiguous": true, "why": "non-browser subject — increment 4. Increment 1's description says a subject you can see in a browser"}
+{"prompt": "prove this fix works with a before and after", "expected_skill": null, "ambiguous": true, "why": "a fix before/after is prove-then-fix's job (a separate skill); neither skill here may claim it"}
+{"prompt": "post the repro to issue 4211", "expected_skill": "github-media-attach", "ambiguous": true, "why": "delivery of evidence that already exists; repro must not fire on the posting verb, and never would now"}
+{"prompt": "our CLI crashes on --json, capture it", "expected_skill": null, "ambiguous": true, "why": "non-browser subject; repro's description says a subject you can see in a browser, and github-media-attach has no file to deliver"}

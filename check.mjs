@@ -28,8 +28,9 @@ const BUDGETS = {
 /**
  * The phrase in each description that says *when not to load this skill*.
  *
- * Three skills in one topic neighbourhood compete for the same triggers, and the
- * only thing separating them is the precondition each one states. A description
+ * Neighbouring skills (github-media-attach, easy-cast's own skill when installed,
+ * and repro even though it is explicit-only) are told apart by the precondition
+ * each one states, so a reader knows which to invoke. A description
  * that loses its precondition still reads fine and starts mis-firing.
  */
 const PRECONDITIONS = {
