@@ -1,6 +1,6 @@
 {
   "name": "easy-repro",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Skills for visual evidence: produce it (repro), deliver it without a CLI (github-media-attach)",
   "type": "module",

@@ -5,7 +5,7 @@ Two agent skills for **visual evidence** in software work:
 - **`repro`** — drive the app in a browser until the feature or the bug is on screen, capture a
   screenshot or a short video, look at it, and render a report folder you can hand to a reviewer.
 - **`github-media-attach`** — put an existing screenshot or video into a GitHub issue, PR or
-  comment, with nothing but `gh`, `curl` and `ffmpeg`.
+  comment, with nothing but `gh` (`--attach`, 2.99+) and `ffmpeg`, plus `curl` on the fallback path.
 
 They do not chain, on purpose: `repro` **posts nothing**. Producing evidence and publishing it are
 different decisions, and the second one is irreversible (see [Uploads are irreversible](#uploads-are-irreversible)).
@@ -128,8 +128,11 @@ something watchable, looking at the file before it becomes permanent — plus th
 easy to get wrong:
 
 - GitHub only plays **h264 mp4 with `yuv420p`**; everything else renders as a black box.
-- The upload endpoint is undocumented, needs a numeric `repository_id`, and answers the same 404
-  for three unrelated causes.
+- `gh --attach` (gh 2.99+) uploads and places the file in one command, but a non-zero exit from
+  `create`/`edit` still updates the target (for `comment` it is undocumented), and a re-run uploads
+  every file again.
+- The fallback upload endpoint is undocumented, needs a numeric `repository_id`, and answers the
+  same 404 for three unrelated causes.
 - The asset URL answers **404 forever**, so checking it the obvious way makes an agent conclude the
   upload failed and upload again — once per iteration, permanently.
 

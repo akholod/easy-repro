@@ -1,13 +1,13 @@
 ---
 name: github-media-attach
-description: Put a screenshot or a video into a GitHub issue, pull request, or comment using only gh, curl and ffmpeg. Covers capturing the screen or a browser, converting to mp4, annotating, uploading to GitHub's attachment endpoint, and placing the markdown — for a new issue, a new PR, an existing body, or a comment. Use when a change or a bug is visible to the eye and describes poorly in prose, and no dedicated attachment CLI is installed.
+description: Put a screenshot or a video into a GitHub issue, pull request, or comment using only gh and ffmpeg. Covers capturing the screen or a browser, converting to mp4, annotating, uploading with `gh --attach` (gh 2.99+, with a curl fallback to GitHub's attachment endpoint for older gh and for review comments), and placing the markdown — for a new issue, a new PR, an existing body, or a comment. Use when a change or a bug is visible to the eye and describes poorly in prose, and no dedicated attachment CLI is installed.
 ---
 
 # Media on a GitHub issue, PR or comment
 
 Prose cannot show a layout. "Fixed the dropdown, checked it" is a claim; a screenshot is evidence.
 This skill is the whole path from "nothing captured yet" to "the image is rendered in the thread",
-using tools that are already on most machines: `gh`, `curl`, `ffmpeg`.
+using tools that are already on most machines: `gh` and `ffmpeg` (plus `curl` on the fallback path).
 
 It does not matter whether the thing is a bug, a feature or a fix, or whether it lands in an issue, a
 pull request or a comment. Those differ only in the **last step**, and only in which `gh` command
@@ -20,8 +20,10 @@ places the same markdown. Everything before that is identical.
 ## 0. The pipeline
 
 ```
-decide → capture → annotate → convert → LOOK AT IT → upload → place the markdown
-  §1        §2        §4         §3         §5          §6          §7
+decide → capture → annotate → convert → LOOK AT IT → upload + place (gh --attach)
+  §1        §2        §4         §3         §5                 §6
+                                                     or: upload (curl) → place markdown
+                                                              §6b            §7
 ```
 
 Two of those steps are the ones agents skip, and both are expensive:
@@ -123,9 +125,9 @@ Every flag is load-bearing:
 **Annotate in this same command** rather than in a second pass (§4) — every re-encode loses quality
 and costs time.
 
-Size: GitHub documents 10 MB for images and free-plan video, 100 MB for paid-plan video. The
-endpoint's real ceiling has not been measured by anyone here — treat 10 MB as the target and a
-rejection as the answer. Trimming, size targeting, gif conversion, and how to shrink a file that is
+Size: GitHub documents 10 MB for images and free-plan video, 100 MB for paid-plan video. On the
+§6b path, the endpoint's real ceiling has not been measured by anyone here — treat 10 MB as the
+target and a rejection as the answer. Trimming, size targeting, gif conversion, and how to shrink a file that is
 too big: [references/convert.md](references/convert.md).
 
 ---
@@ -192,7 +194,57 @@ uploaded. Attach a screenshot instead.
 
 ---
 
-## 6. Upload
+## 6. Upload and place with `gh --attach`
+
+Since gh 2.99 the CLI uploads the file and places the markdown in one command. Check first:
+
+```bash
+gh issue comment --help | grep -q -- '--attach' && echo ok   # older gh: use §6b
+```
+
+| Target | Command |
+| --- | --- |
+| Comment on an issue | `gh issue comment "$N" --repo "$R" --body-file body.md --attach './shot.png#what it shows'` |
+| Comment on a PR | `gh pr comment "$N" --repo "$R" --body-file body.md --attach ./demo.mp4` |
+| New issue / new PR | `gh issue create` / `gh pr create` with `--title`, `--body-file`, `--attach` |
+| Add to an existing body | `gh issue edit "$N" --repo "$R" --attach ./shot.png` — **without** a body flag the body is kept and the file is appended |
+
+How the body and the files meet:
+
+- A reference in the body, `![alt](./shot.png)`, is **rewritten** to the uploaded asset. Paths in a
+  `--body-file` resolve relative to that file's directory, then the working directory. Put the
+  reference where the picture belongs.
+- An attached file the body does not reference is **appended** at the end.
+- Alt text goes after `#`: `--attach './shot.png#the menu covers Save'`. Without it the file name
+  is used, so always give one. Video renders as a player and takes no alt text.
+- Repeat `--attach` for several files, up to 50 per command.
+
+`gh issue edit --body-file` still **replaces** the body whole. To add a picture to someone else's
+body, use `--attach` with no body flag, or post a comment.
+
+Limits are the web UI's: 10 MB for images and GIFs, 10 MB for video on Free plans, 100 MB on paid
+plans. Accepted types are PNG, JPEG, GIF, WebP, SVG, MP4, MOV and WebM; §3 still applies, because
+a file being accepted does not make it play. The changelog documents only the `gh auth login`
+OAuth token and classic PATs. Fine-grained PATs and App or CI tokens are undocumented, so do not
+rely on them; use the documented fallbacks in [references/upload.md](references/upload.md).
+
+**It is still an irreversible upload**, with every rule of §5, §9 and §10:
+
+- `create` / `edit` with a non-zero exit: per the help, the target **is** created or updated with
+  the files that succeeded, and its URL is still printed. Read it back (`gh issue view "$N" --json
+  body` / `gh pr view`) before doing anything. **Do not re-run a `create`**: that is a second issue
+  or PR as well as a second upload of every file.
+- `comment` with a non-zero exit: the outcome is undocumented. List the comments (`gh issue view
+  "$N" --json comments` / `gh pr view "$N" --json comments`) to see what was posted, and still do
+  not re-run.
+- Never wrap any of these in a retry. A repeat is another permanent asset per file.
+- The URL to reuse later is in the posted body: `https://github.com/user-attachments/assets/<uuid>`.
+  Keep it rather than attaching the same file again.
+
+Not covered by `--attach`: `gh pr review`, inline review comments, `gh api`, discussions, GitHub
+Enterprise Server, and an older gh. For those, upload by hand (§6b) and place the markdown (§7).
+
+### 6b. Fallback: the attachment endpoint, by hand
 
 One POST. The endpoint is **undocumented** — this is what GitHub's own web UI calls, and what was
 measured against a live repository:
@@ -249,6 +301,9 @@ Response semantics, the disjunctive 404, the double-complaint 422, and what to d
 ---
 
 ## 7. Place the markdown
+
+With `--attach` (§6) this step is already done. It applies when you uploaded by hand (§6b) or are
+reusing an asset URL you already have.
 
 This is the only step that differs between an issue, a PR and a comment — and it differs only in
 which `gh` command runs. **The asset URL and the markdown fragment are identical in every case.**
@@ -317,6 +372,12 @@ fi
 
 Or: `scripts/upsert-comment.sh --repo "$R" --number "$N" --key ui-check --body-file body.md`.
 
+With `--attach`: `gh api` cannot attach, so make the **first** post with
+`gh issue comment "$N" --repo "$R" --body-file body.md --attach …`, the marker already in
+`body.md`. On a re-run, list the comments first: if the marked comment exists, take the asset URLs
+out of its body and PATCH it as above with those URLs — no new upload. If an earlier `--attach`
+post exited non-zero and no marked comment is found, stop and report it rather than posting again.
+
 The marker is invisible in the rendered comment. Note what it protects and what it does not: the
 comment stops multiplying, but **a second upload of the same file is still a second permanent
 asset** — reuse the URL you already have rather than re-uploading. Keep it somewhere (§ the ledger
@@ -345,7 +406,7 @@ This matters because the obvious verification step is destructive:
 
 | After a successful upload | Do | Do not |
 | --- | --- | --- |
-| Confirming the upload worked | the `201` and the `url` in the body are the confirmation | `GET` the asset URL |
+| Confirming the upload worked | the `201` and the `url` in the body; with `--attach`, the URL gh prints and the body read back | `GET` the asset URL |
 | Confirming it renders | open the comment URL | open the asset URL on its own |
 | Seeing 404 on the asset URL | treat it as expected, and say so | re-upload — that is a second permanent asset, and the next 404 will look the same |
 
@@ -360,6 +421,11 @@ against a private repo protects nothing once the URL is quoted somewhere public.
 ---
 
 ## 10. When it fails
+
+With `--attach`, gh hides the status codes. A non-zero exit can still mean some files landed: a
+`create` or `edit` target is updated anyway (read it back), and for a `comment` the outcome is
+undocumented (list the comments). Report what is there, and do not re-run. The table
+below is for the hand upload in §6b.
 
 | Status | Means | Do |
 | --- | --- | --- |

@@ -98,6 +98,11 @@ backticks and newlines and puts the whole text in the process list.
 Read the file back from stdin when the body is generated rather than stored: every one of these
 accepts `--body-file -`.
 
+On gh 2.99+, every row except the review summary also takes `--attach <file>#<alt text>`: the file
+is uploaded, a `![alt](./file.png)` reference to it in the body is rewritten to the asset URL, and an
+unreferenced file is appended. `gh issue edit` / `gh pr edit` with `--attach` and **no** body flag
+keep the existing body and append. See SKILL.md §6.
+
 ### The same, through the API
 
 Useful when you need the id of what you just created, or a field `gh` does not expose:

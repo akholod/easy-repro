@@ -1,5 +1,9 @@
 # The upload endpoint
 
+**First choice is `gh --attach`** (gh 2.99+, SKILL.md §6), which uploads and places the markdown in
+one command. This file is the fallback for what `--attach` does not cover: an older gh,
+`gh pr review`, inline review comments, `gh api`, and discussions.
+
 `uploads.github.com/user-attachments/assets` is **undocumented**. It is what GitHub's own web UI
 calls when you drag a file into a comment box. What follows was measured against live repositories
 on 2026-08-16; rows marked *not measured* are honest gaps, not omissions.
